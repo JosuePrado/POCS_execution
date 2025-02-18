@@ -1,24 +1,32 @@
+using System;
 using System.IO.Ports;
+using System.Text;
+using System.Threading;
 
 namespace GetDatafromSensors.src.IIoT.sensorComunication
 {
     /// <summary>
     /// Handles serial communication with the industrial oven's humidity sensor.
     /// </summary>
-    public class SerialCommunicator(string portName, int baudRate)
+    public class SerialCommunicator(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
     {
-        private readonly SerialPort _serialPort = new SerialPort(portName, baudRate, Parity.None, 8, StopBits.One);
+        private readonly SerialPort _serialPort = new(portName, baudRate, parity, dataBits, stopBits);
 
         public void OpenConnection()
         {
             _serialPort.Open();
-            Console.WriteLine($"Connected to {_serialPort.PortName} at {_serialPort.BaudRate} baud");
+
+            Console.WriteLine($"Connected to {_serialPort.PortName} port at {_serialPort.BaudRate} baud");
         }
 
-        public string SendCommand(string command)
+        public string SendCommand(byte[] command)
         {
-            _serialPort.WriteLine(command);
-            Console.WriteLine($"Command sent: {command}");
+            Thread.Sleep(1000);
+            Console.WriteLine("The command was sent");
+            _serialPort.Write(command, 0, command.Length);
+            Thread.Sleep(1000);
+
+            Console.WriteLine("Waiting for response...");
             return _serialPort.ReadLine();
         }
 
